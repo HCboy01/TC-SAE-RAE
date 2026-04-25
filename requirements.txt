@@ -1,0 +1,19 @@
+# SAE-RAE (unlabeled SAE-conditioned DiT fine-tuning)
+# CUDA torch는 환경에 맞는 wheel index로 별도 설치 권장
+# 예) pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Core
+transformers==4.56.2
+omegaconf==2.3.0
+einops==0.8.2
+timm==0.9.16
+torchdiffeq==0.2.5
+numpy==1.26.0
+Pillow>=10.0.0
+huggingface_hub>=0.23.5
+
+# Logging / optional eval utils (RAE 코드 호환)
+wandb>=0.16.0
+accelerate==0.23.0
+torchmetrics>=1.4.0
+torch-fidelity>=0.3.0

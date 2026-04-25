@@ -1,0 +1,50 @@
+experiment:
+  seed: 42
+  device: cuda
+  save_dir: checkpoints/ffhq256_topk_tc_preact_v9
+  save_every: 5
+  log_interval_steps: 100
+  use_amp: true
+  amp_dtype: bf16
+
+paths:
+  rae_config: configs/vendor/rae/stage1/pretrained/DINOv2-B.yaml
+  data_path: /scratch/x3411a10/datasets/ffhq256/imagefolder/train
+
+data:
+  image_size: 256
+  batch_size: 64
+  num_workers: 4
+
+sae:
+  n_latents: 6144
+  k: 64
+  l1_weight: 0.01
+  lr: 0.0001
+  weight_decay: 0.0
+  epochs: 400
+
+tc:
+  enabled: true
+
+  tc_weight: 0.1
+  tc_warmup_epochs: 15
+
+  disc_lr: 1.0e-4                 # v8(3e-4) → 1e-4: disc 과학습 완화
+  disc_hidden: 512
+  disc_steps: 1                   # v8(3) → 1: SAE-disc 균형 조정
+
+  disc_update_freq: 1
+
+  sae_grad_clip: 1.0
+
+eval:
+  enabled: true
+  data_path: /scratch/x3411a10/datasets/ffhq256/imagefolder/val
+  eval_every: 1
+  max_batches: 55
+
+features_cache:
+  enabled: true
+  train_features: /scratch/x3411a10/unconditional_diffusion/SAE-DINO/features/ffhq256/train_features.bin
+  eval_features: /scratch/x3411a10/unconditional_diffusion/SAE-DINO/features/ffhq256/eval_features.bin

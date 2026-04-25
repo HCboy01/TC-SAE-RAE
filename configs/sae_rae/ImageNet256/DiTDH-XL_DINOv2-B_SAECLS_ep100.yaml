@@ -1,0 +1,104 @@
+stage_1:
+  target: stage1.RAE
+  params:
+    encoder_cls: 'Dinov2withNorm'
+    encoder_config_path: 'facebook/dinov2-with-registers-base'
+    encoder_input_size: 224
+    encoder_params:
+      dinov2_path: 'facebook/dinov2-with-registers-base'
+      normalize: true
+    decoder_config_path: 'configs/vendor/rae/decoder/ViTXL'
+    pretrained_decoder_path: '/home/gimhyeongchan97/RAE/models/decoders/dinov2/wReg_base/ViTXL_n08/model.pt'
+    noise_tau: 0.0
+    reshape_to_2d: true
+    normalization_stat_path: '/home/gimhyeongchan97/RAE/models/stats/dinov2/wReg_base/imagenet1k/stat.pt'
+
+stage_2:
+  target: sae_rae.models.ddt_sae.DiTwDDTHeadSAECond
+  params:
+    input_size: 16
+    patch_size: 1
+    in_channels: 768
+    hidden_size: [1152, 2048]
+    depth: [28, 2]
+    num_heads: [16, 16]
+    mlp_ratio: 4.0
+    class_dropout_prob: 0.1
+    num_classes: 1000
+    use_qknorm: false
+    use_swiglu: true
+    use_rope: true
+    use_rmsnorm: true
+    wo_shift: false
+    use_pos_embed: true
+    cond_dim: 0  # overwritten by src/sae_rae/train.py from SAE checkpoint
+    cond_dropout_prob: 0.1
+    cond_use_layernorm: true
+  ckpt: '/home/gimhyeongchan97/RAE/models/DiTs/Dinov2/wReg_base/ImageNet256/DiTDH-XL/stage2_model.pt'
+
+sae_condition:
+  # If omitted, these fall back to stage_1 params where possible.
+  encoder_config_path: 'facebook/dinov2-with-registers-base'
+  encoder_input_size: 224
+  dinov2_path: 'facebook/dinov2-with-registers-base'
+  sae_ckpt: '/home/gimhyeongchan97/SAE-DINO/checkpoints_ffhq256_topk_ep80/sae_cls_epoch100.pt'
+  sae_src_path: 'src'
+
+transport:
+  params:
+    path_type: 'Linear'
+    prediction: 'velocity'
+    loss_weight: null
+    time_dist_type: 'logit-normal_0_1'
+
+misc:
+  latent_size: [768, 16, 16]
+  num_classes: 1000
+  time_dist_shift_dim: 196608
+  time_dist_shift_base: 4096
+
+training:
+  null_label: 1000
+  epochs: 20
+  batch_size: 8
+  num_workers: 8
+  log_interval: 100
+  ema_decay: 0.9995
+  checkpoint:
+    # full | model_ema | ema_only | model_only
+    save_mode: ema_only
+    save_every_n_epochs: 1
+    keep_last_n: 3
+  optimizer:
+    lr: 1.0e-4
+    betas: [0.9, 0.95]
+    weight_decay: 0.0
+
+fid_eval:
+  enabled: false
+  every_n_epochs: 2
+  cfg_scale: 2.0
+  cfg_t_min: 0.0
+  cfg_t_max: 1.0
+  num_samples: 100
+  batch_size: 8
+  precision: bf16
+  # If omitted, defaults to --data-path
+  real_path: '/home/gimhyeongchan97/datasets/ffhq256/imagefolder/val'
+  cond_path: '/home/gimhyeongchan97/datasets/ffhq256/imagefolder/val'
+  samples_find_deep: true
+  save_pair_grid: true
+  fixed_grid_samples: true
+  grid_pairs_per_image: 8
+  max_grid_pairs: 32
+  save_pair_manifest: false
+  clean_samples: true
+
+grid_eval:
+  every_n_epochs: 2
+
+val_eval:
+  enabled: true
+  every_n_epochs: 1
+  val_path: '/home/gimhyeongchan97/datasets/ffhq256/imagefolder/val'
+  batch_size: 8
