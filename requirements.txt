@@ -1,6 +1,7 @@
 # SAE-RAE (unlabeled SAE-conditioned DiT fine-tuning)
-# CUDA torch는 환경에 맞는 wheel index로 별도 설치 권장
-# 예) pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# PyTorch는 환경에 맞는 wheel index로 별도 설치 권장
+# 현재 서버 환경: torch==2.5.1, CUDA 12.4
+# pip install torch==2.5.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 
 # Core
 transformers==4.56.2
